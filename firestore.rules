@@ -1,0 +1,43 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Helper function to check if user owns the resource
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+    
+    // Contacts collection
+    match /contacts/{contactId} {
+      // Users can read their own contacts
+      allow read: if isAuthenticated() && isOwner(resource.data.userId);
+      
+      // Users can create contacts for themselves
+      allow create: if isAuthenticated() && isOwner(request.resource.data.userId);
+      
+      // Users can update their own contacts
+      allow update: if isAuthenticated() && isOwner(resource.data.userId);
+      
+      // Users can delete their own contacts
+      allow delete: if isAuthenticated() && isOwner(resource.data.userId);
+      
+      // Interactions subcollection
+      match /interactions/{interactionId} {
+        allow read: if isAuthenticated() && isOwner(get(/databases/$(database)/documents/contacts/$(contactId)).data.userId);
+        allow create: if isAuthenticated() && isOwner(get(/databases/$(database)/documents/contacts/$(contactId)).data.userId);
+        allow update: if isAuthenticated() && isOwner(get(/databases/$(database)/documents/contacts/$(contactId)).data.userId);
+        allow delete: if isAuthenticated() && isOwner(get(/databases/$(database)/documents/contacts/$(contactId)).data.userId);
+      }
+    }
+    
+    // User settings collection (optional for future use)
+    match /users/{userId} {
+      allow read, write: if isAuthenticated() && isOwner(userId);
+    }
+  }
+}
