@@ -21,6 +21,12 @@ export const useContactStore = create((set, get) => ({
 
   // Subscribe to contacts for current user
   subscribeToContacts: (userId) => {
+    if (!db) {
+      console.error('Firestore not initialized')
+      set({ loading: false, error: 'Database not available' })
+      return
+    }
+
     // Unsubscribe from previous listener if exists
     const currentUnsubscribe = get().unsubscribe
     if (currentUnsubscribe) {
@@ -29,15 +35,16 @@ export const useContactStore = create((set, get) => ({
 
     set({ loading: true, error: null })
 
-    const q = query(
-      collection(db, 'contacts'),
-      where('userId', '==', userId)
-    )
+    try {
+      const q = query(
+        collection(db, 'contacts'),
+        where('userId', '==', userId)
+      )
 
-    const unsubscribe = onSnapshot(
-      q,
-      (snapshot) => {
-        const contacts = snapshot.docs.map(doc => ({
+      const unsubscribe = onSnapshot(
+        q,
+        (snapshot) => {
+          const contacts = snapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data(),
           // Convert Firestore timestamps to ISO strings
@@ -58,8 +65,12 @@ export const useContactStore = create((set, get) => ({
       }
     )
 
-    set({ unsubscribe })
-    return unsubscribe
+      set({ unsubscribe })
+      return unsubscribe
+    } catch (error) {
+      console.error('Error subscribing to contacts:', error)
+      set({ loading: false, error: error.message })
+    }
   },
 
   // Unsubscribe from contacts
@@ -73,6 +84,9 @@ export const useContactStore = create((set, get) => ({
 
   // Add new contact
   addContact: async (userId, contactData) => {
+    if (!db) {
+      return { success: false, error: 'Database not available' }
+    }
     try {
       const docRef = await addDoc(collection(db, 'contacts'), {
         ...contactData,
@@ -91,6 +105,9 @@ export const useContactStore = create((set, get) => ({
 
   // Update contact
   updateContact: async (contactId, updates) => {
+    if (!db) {
+      return { success: false, error: 'Database not available' }
+    }
     try {
       const contactRef = doc(db, 'contacts', contactId)
       await updateDoc(contactRef, {
@@ -107,6 +124,9 @@ export const useContactStore = create((set, get) => ({
 
   // Delete contact
   deleteContact: async (contactId) => {
+    if (!db) {
+      return { success: false, error: 'Database not available' }
+    }
     try {
       await deleteDoc(doc(db, 'contacts', contactId))
       return { success: true }
@@ -118,6 +138,9 @@ export const useContactStore = create((set, get) => ({
 
   // Log interaction
   logInteraction: async (contactId, interactionData) => {
+    if (!db) {
+      return { success: false, error: 'Database not available' }
+    }
     try {
       const contact = get().contacts.find(c => c.id === contactId)
       if (!contact) {

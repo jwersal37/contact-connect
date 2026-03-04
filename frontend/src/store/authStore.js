@@ -14,26 +14,41 @@ export const useAuthStore = create((set) => ({
 
   // Initialize - listen to Firebase auth state
   initialize: () => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-      if (firebaseUser) {
-        set({ 
-          user: {
-            id: firebaseUser.uid,
-            email: firebaseUser.email,
-            displayName: firebaseUser.displayName,
-          },
-          loading: false 
-        })
-      } else {
-        set({ user: null, loading: false })
-      }
-    })
-    
-    return unsubscribe
+    if (!auth) {
+      console.error('Firebase auth not initialized')
+      set({ loading: false })
+      return () => {}
+    }
+
+    try {
+      const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+        if (firebaseUser) {
+          set({ 
+            user: {
+              id: firebaseUser.uid,
+              email: firebaseUser.email,
+              displayName: firebaseUser.displayName,
+            },
+            loading: false 
+          })
+        } else {
+          set({ user: null, loading: false })
+        }
+      })
+      
+      return unsubscribe
+    } catch (error) {
+      console.error('Error initializing auth:', error)
+      set({ loading: false })
+      return () => {}
+    }
   },
 
   // Sign up with email and password
   signUp: async (email, password, displayName) => {
+    if (!auth) {
+      return { success: false, error: 'Authentication not available' }
+    }
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password)
       
@@ -67,6 +82,9 @@ export const useAuthStore = create((set) => ({
 
   // Sign in with email and password
   signIn: async (email, password) => {
+    if (!auth) {
+      return { success: false, error: 'Authentication not available' }
+    }
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password)
       
@@ -97,6 +115,9 @@ export const useAuthStore = create((set) => ({
 
   // Sign out
   signOut: async () => {
+    if (!auth) {
+      return { success: false, error: 'Authentication not available' }
+    }
     try {
       await firebaseSignOut(auth)
       set({ user: null })

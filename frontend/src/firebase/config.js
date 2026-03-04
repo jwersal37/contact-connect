@@ -11,9 +11,21 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 }
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig)
+// Initialize Firebase with error handling
+let app = null
+let auth = null
+let db = null
 
-// Initialize services
-export const auth = getAuth(app)
-export const db = getFirestore(app)
+try {
+  app = initializeApp(firebaseConfig)
+  auth = getAuth(app)
+  db = getFirestore(app)
+  console.log('✅ Firebase initialized successfully')
+} catch (error) {
+  console.error('❌ Firebase initialization error:', error)
+  console.error('Check your .env file and Firebase config')
+}
+
+// Export services (will be null if initialization failed)
+export { auth, db }
+export default app
