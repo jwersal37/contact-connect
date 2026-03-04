@@ -59,8 +59,12 @@ npm run dev
 
 1. Click the button above or go to [vercel.com](https://vercel.com)
 2. Import your GitHub repository
-3. Vercel will auto-detect the settings
-4. Click "Deploy"
+3. **In the Configure Project section:**
+   - Set **Root Directory** to `frontend`
+   - Framework Preset: Vite
+   - Build Command: `npm run build`
+   - Output Directory: `dist`
+4. Click **"Deploy"**
 5. Done! Your app is live 🎉
 
 ### Deploy to Netlify
