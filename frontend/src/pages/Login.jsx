@@ -12,6 +12,12 @@ export default function Login() {
   const navigate = useNavigate()
   const { signIn } = useAuthStore()
 
+  // DEV: Double-click to auto-fill test data
+  const handleDevAutoFill = () => {
+    setEmail('test@test.com')
+    setPassword('test123')
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
@@ -97,7 +103,9 @@ export default function Login() {
             <button
               type="submit"
               disabled={loading}
+              onDoubleClick={handleDevAutoFill}
               className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 transition-colors"
+              title="Double-click to auto-fill test data (dev mode)"
             >
               <LogIn className="w-5 h-5 mr-2" />
               {loading ? 'Signing in...' : 'Sign In'}
