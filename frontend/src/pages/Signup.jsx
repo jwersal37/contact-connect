@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
-import { Mail, Lock, UserPlus, User } from 'lucide-react'
+import { Mail, Lock, UserPlus, User, X } from 'lucide-react'
 
 export default function Signup() {
   const [formData, setFormData] = useState({
@@ -77,7 +77,16 @@ export default function Signup() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 to-primary-100 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-lg">
+      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-lg relative">
+        {/* Close button */}
+        <Link
+          to="/"
+          className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 transition-colors"
+          title="Back to login"
+        >
+          <X className="w-5 h-5" />
+        </Link>
+        
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
             Create your account

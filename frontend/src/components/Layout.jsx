@@ -23,9 +23,14 @@ export default function Layout() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex">
-              <div className="flex-shrink-0 flex items-center">
-                <h1 className="text-xl font-bold text-primary-600">ContactConnect</h1>
-              </div>
+              <Link to="/dashboard" className="flex-shrink-0 flex items-center group">
+                <div className="flex items-center space-x-2">
+                  <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-600 rounded-lg flex items-center justify-center">
+                    <Users className="w-5 h-5 text-white" />
+                  </div>
+                  <h1 className="text-xl font-bold text-primary-600 group-hover:text-primary-700 transition-colors">ContactConnect</h1>
+                </div>
+              </Link>
               <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
                 {navItems.map(({ path, label, icon: Icon }) => (
                   <Link

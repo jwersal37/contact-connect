@@ -66,6 +66,8 @@ export const useAuthStore = create((set) => ({
       return { success: true }
     } catch (error) {
       console.error('Sign up error:', error)
+      console.error('Error code:', error.code)
+      console.error('Error message:', error.message)
       let errorMessage = 'Failed to create account'
       
       if (error.code === 'auth/email-already-in-use') {
@@ -74,6 +76,10 @@ export const useAuthStore = create((set) => ({
         errorMessage = 'Password should be at least 6 characters'
       } else if (error.code === 'auth/invalid-email') {
         errorMessage = 'Invalid email address'
+      } else if (error.message.includes('400')) {
+        errorMessage = 'Firebase Authentication not enabled. Please enable Email/Password auth in Firebase Console.'
+      } else if (error.code === 'auth/operation-not-allowed') {
+        errorMessage = 'Email/Password authentication is not enabled. Check Firebase Console.'
       }
       
       return { success: false, error: errorMessage }
@@ -99,6 +105,8 @@ export const useAuthStore = create((set) => ({
       return { success: true }
     } catch (error) {
       console.error('Sign in error:', error)
+      console.error('Error code:', error.code)
+      console.error('Error message:', error.message)
       let errorMessage = 'Failed to sign in'
       
       if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
@@ -107,6 +115,10 @@ export const useAuthStore = create((set) => ({
         errorMessage = 'Invalid email address'
       } else if (error.code === 'auth/too-many-requests') {
         errorMessage = 'Too many attempts. Please try again later'
+      } else if (error.message.includes('400')) {
+        errorMessage = 'Firebase Authentication not enabled. Please enable Email/Password auth in Firebase Console.'
+      } else if (error.code === 'auth/operation-not-allowed') {
+        errorMessage = 'Email/Password authentication is not enabled. Check Firebase Console.'
       }
       
       return { success: false, error: errorMessage }
