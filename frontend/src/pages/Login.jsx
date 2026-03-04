@@ -12,10 +12,26 @@ export default function Login() {
   const navigate = useNavigate()
   const { signIn } = useAuthStore()
 
-  // DEV: Double-click to auto-fill test data
-  const handleDevAutoFill = () => {
-    setEmail('test@test.com')
-    setPassword('test123')
+  // DEV: Double-click to auto-fill test data and submit
+  const handleDevAutoFill = async () => {
+    const testEmail = 'test@test.com'
+    const testPassword = 'test123'
+    
+    // Update form for visual feedback
+    setEmail(testEmail)
+    setPassword(testPassword)
+    setError('')
+    setLoading(true)
+
+    // Submit directly with test credentials
+    const result = await signIn(testEmail, testPassword)
+    
+    if (!result.success) {
+      setError(result.error)
+      setLoading(false)
+    } else {
+      navigate('/dashboard')
+    }
   }
 
   const handleSubmit = async (e) => {

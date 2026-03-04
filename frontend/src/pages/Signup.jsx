@@ -23,15 +23,34 @@ export default function Signup() {
     })
   }
 
-  // DEV: Double-click to auto-fill test data
-  const handleDevAutoFill = () => {
+  // DEV: Double-click to auto-fill test data and submit
+  const handleDevAutoFill = async () => {
     const timestamp = Date.now()
-    setFormData({
+    const testData = {
       displayName: 'Test User',
       email: `test${timestamp}@test.com`,
       password: 'test123',
       confirmPassword: 'test123'
-    })
+    }
+    
+    // Update form for visual feedback
+    setFormData(testData)
+    setError('')
+    setLoading(true)
+
+    // Submit directly with test data
+    const result = await signUp(
+      testData.email,
+      testData.password,
+      testData.displayName
+    )
+    
+    if (!result.success) {
+      setError(result.error)
+      setLoading(false)
+    } else {
+      navigate('/dashboard')
+    }
   }
 
   const handleSubmit = async (e) => {
