@@ -1,14 +1,15 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
 import { Mail, Lock, UserPlus, User, X } from 'lucide-react'
 
 export default function Signup() {
+  const timestamp = Date.now()
   const [formData, setFormData] = useState({
-    displayName: '',
-    email: '',
-    password: '',
-    confirmPassword: ''
+    displayName: 'Test User',
+    email: `test${timestamp}@test.com`,
+    password: 'test123',
+    confirmPassword: 'test123'
   })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)

@@ -6,7 +6,8 @@ import {
   onAuthStateChanged,
   updateProfile
 } from 'firebase/auth'
-import { auth } from '../firebase/config'
+import { doc, setDoc } from 'firebase/firestore'
+import { auth, db } from '../firebase/config'
 
 export const useAuthStore = create((set) => ({
   user: null,
@@ -46,7 +47,7 @@ export const useAuthStore = create((set) => ({
 
   // Sign up with email and password
   signUp: async (email, password, displayName) => {
-    if (!auth) {
+    if (!auth || !db) {
       return { success: false, error: 'Authentication not available' }
     }
     try {
@@ -54,6 +55,14 @@ export const useAuthStore = create((set) => ({
       
       // Update profile with display name
       await updateProfile(userCredential.user, { displayName })
+      
+      // Create user document in Firestore
+      await setDoc(doc(db, 'users', userCredential.user.uid), {
+        email: userCredential.user.email,
+        displayName,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      })
       
       set({ 
         user: {

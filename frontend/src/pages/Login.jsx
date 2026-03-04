@@ -4,8 +4,8 @@ import { useAuthStore } from '../store/authStore'
 import { Mail, Lock, LogIn } from 'lucide-react'
 
 export default function Login() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+  const [email, setEmail] = useState('test@test.com')
+  const [password, setPassword] = useState('test123')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   
