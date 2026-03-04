@@ -60,8 +60,9 @@ export default function Login() {
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="appearance-none relative block w-full px-3 py-3 pl-10 border border-gray-300 placeholder-gray-400 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                className="appearance-none relative block w-full px-3 py-3 pl-10 border border-gray-300 placeholder-gray-400 text-gray-900 bg-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
                 placeholder="Enter your name"
+                autoComplete="off"
                 autoFocus
               />
             </div>
