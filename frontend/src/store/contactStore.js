@@ -1,96 +1,144 @@
 import { create } from 'zustand'
-
-const STORAGE_KEY = 'contactconnect_contacts'
-
-// Helper to load contacts from localStorage
-const loadContacts = () => {
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY)
-    return saved ? JSON.parse(saved) : []
-  } catch (error) {
-    console.error('Error loading contacts:', error)
-    return []
-  }
-}
-
-// Helper to save contacts to localStorage
-const saveContacts = (contacts) => {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(contacts))
-  } catch (error) {
-    console.error('Error saving contacts:', error)
-  }
-}
+import {
+  collection,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  doc,
+  query,
+  where,
+  onSnapshot,
+  serverTimestamp,
+  Timestamp
+} from 'firebase/firestore'
+import { db } from '../firebase/config'
 
 export const useContactStore = create((set, get) => ({
-  contacts: loadContacts(),
+  contacts: [],
   loading: false,
   error: null,
+  unsubscribe: null,
 
-  // Load contacts (called on mount)
-  loadContacts: () => {
-    const contacts = loadContacts()
-    set({ contacts, loading: false })
+  // Subscribe to contacts for current user
+  subscribeToContacts: (userId) => {
+    // Unsubscribe from previous listener if exists
+    const currentUnsubscribe = get().unsubscribe
+    if (currentUnsubscribe) {
+      currentUnsubscribe()
+    }
+
+    set({ loading: true, error: null })
+
+    const q = query(
+      collection(db, 'contacts'),
+      where('userId', '==', userId)
+    )
+
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const contacts = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+          // Convert Firestore timestamps to ISO strings
+          createdAt: doc.data().createdAt?.toDate?.()?.toISOString() || doc.data().createdAt,
+          lastContact: doc.data().lastContact?.toDate?.()?.toISOString() || doc.data().lastContact,
+          updatedAt: doc.data().updatedAt?.toDate?.()?.toISOString() || doc.data().updatedAt,
+          interactions: (doc.data().interactions || []).map(interaction => ({
+            ...interaction,
+            timestamp: interaction.timestamp?.toDate?.()?.toISOString() || interaction.timestamp
+          }))
+        }))
+        
+        set({ contacts, loading: false, error: null })
+      },
+      (error) => {
+        console.error('Error fetching contacts:', error)
+        set({ error: error.message, loading: false })
+      }
+    )
+
+    set({ unsubscribe })
+    return unsubscribe
+  },
+
+  // Unsubscribe from contacts
+  unsubscribeFromContacts: () => {
+    const unsubscribe = get().unsubscribe
+    if (unsubscribe) {
+      unsubscribe()
+      set({ unsubscribe: null, contacts: [] })
+    }
   },
 
   // Add new contact
   addContact: async (userId, contactData) => {
-    const newContact = {
-      id: Date.now().toString(),
-      ...contactData,
-      userId,
-      createdAt: new Date().toISOString(),
-      lastContact: new Date().toISOString(),
-      interactions: []
+    try {
+      const docRef = await addDoc(collection(db, 'contacts'), {
+        ...contactData,
+        userId,
+        createdAt: serverTimestamp(),
+        lastContact: serverTimestamp(),
+        interactions: []
+      })
+      
+      return { success: true, id: docRef.id }
+    } catch (error) {
+      console.error('Error adding contact:', error)
+      return { success: false, error: error.message }
     }
-
-    const contacts = [...get().contacts, newContact]
-    saveContacts(contacts)
-    set({ contacts })
-    return { success: true, id: newContact.id }
   },
 
   // Update contact
   updateContact: async (contactId, updates) => {
-    const contacts = get().contacts.map(contact =>
-      contact.id === contactId
-        ? { ...contact, ...updates, updatedAt: new Date().toISOString() }
-        : contact
-    )
-    
-    saveContacts(contacts)
-    set({ contacts })
-    return { success: true }
+    try {
+      const contactRef = doc(db, 'contacts', contactId)
+      await updateDoc(contactRef, {
+        ...updates,
+        updatedAt: serverTimestamp()
+      })
+      
+      return { success: true }
+    } catch (error) {
+      console.error('Error updating contact:', error)
+      return { success: false, error: error.message }
+    }
   },
 
   // Delete contact
   deleteContact: async (contactId) => {
-    const contacts = get().contacts.filter(contact => contact.id !== contactId)
-    saveContacts(contacts)
-    set({ contacts })
-    return { success: true }
+    try {
+      await deleteDoc(doc(db, 'contacts', contactId))
+      return { success: true }
+    } catch (error) {
+      console.error('Error deleting contact:', error)
+      return { success: false, error: error.message }
+    }
   },
 
   // Log interaction
   logInteraction: async (contactId, interactionData) => {
-    const contacts = get().contacts.map(contact => {
-      if (contact.id === contactId) {
-        const interaction = {
-          id: Date.now().toString(),
-          ...interactionData,
-          timestamp: new Date().toISOString(),
-        }
-        return {
-          ...contact,
-          lastContact: new Date().toISOString(),
-          interactions: [...(contact.interactions || []), interaction]
-        }
+    try {
+      const contact = get().contacts.find(c => c.id === contactId)
+      if (!contact) {
+        return { success: false, error: 'Contact not found' }
       }
-      return contact
-    })
 
-    saveContacts(contacts)
-    set({ contacts })
-    return { success: true }
+      const interaction = {
+        ...interactionData,
+        timestamp: Timestamp.now()
+      }
+
+      const contactRef = doc(db, 'contacts', contactId)
+      await updateDoc(contactRef, {
+        lastContact: serverTimestamp(),
+        interactions: [...(contact.interactions || []), interaction]
+      })
+
+      return { success: true }
+    } catch (error) {
+      console.error('Error logging interaction:', error)
+      return { success: false, error: error.message }
+    }
   },
 }))

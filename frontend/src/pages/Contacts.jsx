@@ -6,7 +6,7 @@ import { Plus, Search, Trash2, Edit2, MessageCircle } from 'lucide-react'
 
 export default function Contacts() {
   const { user } = useAuthStore()
-  const { contacts, loadContacts, addContact, deleteContact, logInteraction } = useContactStore()
+  const { contacts, subscribeToContacts, unsubscribeFromContacts, addContact, deleteContact, logInteraction } = useContactStore()
   const [searchQuery, setSearchQuery] = useState('')
   const [showAddModal, setShowAddModal] = useState(false)
   const [newContact, setNewContact] = useState({
@@ -19,7 +19,12 @@ export default function Contacts() {
 
   useEffect(() => {
     if (user) {
-      loadContacts()
+      subscribeToContacts(user.id)
+    }
+    
+    // Cleanup: unsubscribe when component unmounts or user changes
+    return () => {
+      unsubscribeFromContacts()
     }
   }, [user])
 

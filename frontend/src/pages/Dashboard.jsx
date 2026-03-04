@@ -6,12 +6,17 @@ import { AlertCircle, TrendingUp, Users, Clock } from 'lucide-react'
 
 export default function Dashboard() {
   const { user } = useAuthStore()
-  const { contacts, loadContacts } = useContactStore()
+  const { contacts, subscribeToContacts, unsubscribeFromContacts } = useContactStore()
   const [overdueContacts, setOverdueContacts] = useState([])
 
   useEffect(() => {
     if (user) {
-      loadContacts()
+      subscribeToContacts(user.id)
+    }
+    
+    // Cleanup: unsubscribe when component unmounts or user changes
+    return () => {
+      unsubscribeFromContacts()
     }
   }, [user])
 

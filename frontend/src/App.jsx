@@ -4,6 +4,7 @@ import Layout from './components/Layout'
 import Dashboard from './pages/Dashboard'
 import Contacts from './pages/Contacts'
 import Login from './pages/Login'
+import Signup from './pages/Signup'
 import Settings from './pages/Settings'
 
 function App() {
@@ -20,10 +21,10 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/login" element={!user ? <Login /> : <Navigate to="/" />} />
+        <Route path="/" element={!user ? <Login /> : <Navigate to="/dashboard" />} />
+        <Route path="/signup" element={!user ? <Signup /> : <Navigate to="/dashboard" />} />
         
-        <Route path="/" element={user ? <Layout /> : <Navigate to="/login" />}>
-          <Route index element={<Navigate to="/contacts" />} />
+        <Route path="/" element={user ? <Layout /> : <Navigate to="/" />}>
           <Route path="contacts" element={<Contacts />} />
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="settings" element={<Settings />} />
