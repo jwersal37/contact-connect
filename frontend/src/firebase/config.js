@@ -25,7 +25,10 @@ let db = null
 
 try {
   if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
-    throw new Error('Firebase config missing. Make sure .env file exists and dev server was restarted.')
+    const errorMsg = import.meta.env.PROD 
+      ? 'Firebase environment variables not found in Vercel. Redeploy after setting VITE_* env vars.'
+      : 'Firebase config missing. Make sure .env file exists and dev server was restarted.'
+    throw new Error(errorMsg)
   }
   
   app = initializeApp(firebaseConfig)
@@ -34,7 +37,11 @@ try {
   console.log('✅ Firebase initialized successfully')
 } catch (error) {
   console.error('❌ Firebase initialization error:', error)
-  console.error('💡 Solution: Make sure frontend/.env exists and restart the dev server (Ctrl+C then npm run dev)')
+  if (import.meta.env.PROD) {
+    console.error('💡 In Vercel: Set environment variables with VITE_ prefix and redeploy')
+  } else {
+    console.error('💡 Locally: Make sure frontend/.env exists and restart dev server (Ctrl+C then npm run dev)')
+  }
 }
 
 // Export services (will be null if initialization failed)
