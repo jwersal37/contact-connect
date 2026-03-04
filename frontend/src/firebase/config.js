@@ -11,19 +11,30 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 }
 
+// Debug: Check if env vars are loaded
+console.log('🔍 Firebase config check:', {
+  hasApiKey: !!firebaseConfig.apiKey,
+  hasProjectId: !!firebaseConfig.projectId,
+  apiKeyPreview: firebaseConfig.apiKey?.substring(0, 10) + '...'
+})
+
 // Initialize Firebase with error handling
 let app = null
 let auth = null
 let db = null
 
 try {
+  if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
+    throw new Error('Firebase config missing. Make sure .env file exists and dev server was restarted.')
+  }
+  
   app = initializeApp(firebaseConfig)
   auth = getAuth(app)
   db = getFirestore(app)
   console.log('✅ Firebase initialized successfully')
 } catch (error) {
   console.error('❌ Firebase initialization error:', error)
-  console.error('Check your .env file and Firebase config')
+  console.error('💡 Solution: Make sure frontend/.env exists and restart the dev server (Ctrl+C then npm run dev)')
 }
 
 // Export services (will be null if initialization failed)
